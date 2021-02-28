@@ -1933,13 +1933,16 @@ List surtiver_fixtra_fit(const vec &event, const IntegerVector &count_strata,
   // iterative algorithm with backtracking line search
   unsigned int iter = 0, btr_max = 1000, btr_ct = 0;
   mat theta = theta_init; vec beta_ti = beta_ti_init;
+  List theta_list = List::create(theta), beta_ti_list = List::create(beta_ti);
   double crit = 1.0, v = 1.0, logplkd_init = 0, logplkd, diff_logplkd, 
     inc, rhs_btr = 0;
   List objfun_list, update_list;
+  NumericVector logplkd_vec;
   objfun_list = objfun_fixtra(Z_tv, B_spline, theta, Z_ti, beta_ti, ti, n_strata,
                               idx_B_sp, idx_fail, n_Z_strata, idx_Z_strata,
                               istart, iend, parallel, threads);
   logplkd = objfun_list["logplkd"];
+  logplkd_vec.push_back(logplkd);
   while (iter < iter_max && crit > tol) {
     ++iter;
     update_list = stepinc_fixtra(Z_tv, B_spline, theta, Z_ti, beta_ti, ti, n_strata,
@@ -1953,6 +1956,7 @@ List surtiver_fixtra_fit(const vec &event, const IntegerVector &count_strata,
       if (btr=="none") {
         theta += step_tv;
         beta_ti += step_ti;
+        theta_list.push_back(theta); beta_ti_list.push_back(beta_ti);
         crit = inc / 2;
         objfun_list = objfun_fixtra(Z_tv, B_spline, theta, Z_ti, beta_ti, ti, n_strata, 
                                     idx_B_sp, idx_fail, n_Z_strata, idx_Z_strata,
@@ -1982,6 +1986,7 @@ List surtiver_fixtra_fit(const vec &event, const IntegerVector &count_strata,
           diff_logplkd = logplkd_tmp - logplkd;
         }
         theta = theta_tmp; beta_ti = beta_ti_tmp;
+        theta_list.push_back(theta); beta_ti_list.push_back(beta_ti);
         if (iter==1) logplkd_init = logplkd;
         if (stop=="incre")
           crit = inc / 2;
@@ -2036,6 +2041,7 @@ List surtiver_fixtra_fit(const vec &event, const IntegerVector &count_strata,
     cout << "Iter " << iter << ": Obj fun = " << setprecision(7) << fixed << 
       logplkd << "; Stopping crit = " << setprecision(7) << scientific << 
         crit << ";" << endl;
+    logplkd_vec.push_back(logplkd);
   }
   cout << "Algorithm converged after " << iter << " iterations!" << endl;
   CharacterVector names_strata = count_strata.names();
@@ -2045,14 +2051,21 @@ List surtiver_fixtra_fit(const vec &event, const IntegerVector &count_strata,
     hazard_list.push_back(hazard[i], as<string>(names_strata[i]));
   }
   if (ti) {
-    return List::create(_["ctrl.pts"]=theta, _["tief"]=beta_ti,
+    return List::create(_["ctrl.pts"]=theta,
+                        _["ctrl.pts.hist"]=theta_list,
+                        _["tief"]=beta_ti,
+                        _["tief.hist"]=beta_ti_list,
                         _["info"]=update_list["info"], 
                         _["logplkd"]=logplkd*event.n_elem,
+                        _["logplkd.hist"]=logplkd_vec*event.n_elem,
                         _["btr.ct"]=btr_ct,
                         _["hazard"]=hazard_list);
   } else {
-    return List::create(_["ctrl.pts"]=theta, _["info"]=update_list["info"],
-                        _["logplkd"]=logplkd*event.n_elem, _["btr.ct"]=btr_ct,
+    return List::create(_["ctrl.pts"]=theta, _["ctrl.pts.hist"]=theta_list,
+                        _["info"]=update_list["info"],
+                        _["logplkd"]=logplkd*event.n_elem,
+                        _["logplkd.hist"]=logplkd_vec*event.n_elem,
+                        _["btr.ct"]=btr_ct,
                         _["hazard"]=hazard_list);
   }
 }
@@ -2141,14 +2154,17 @@ List surtiver_fixtra_bresties_fit(const vec &event, const vec &time,
   // iterative algorithm with backtracking line search
   unsigned int iter = 0, btr_max = 1000, btr_ct = 0;
   mat theta = theta_init; vec beta_ti = beta_ti_init;
+  List theta_list = List::create(theta), beta_ti_list = List::create(beta_ti);
   double crit = 1.0, v = 1.0, logplkd_init = 0, logplkd, diff_logplkd,
     inc, rhs_btr = 0;
   List objfun_list, update_list;
+  NumericVector logplkd_vec;
   objfun_list = obj_fixtra_bresties(Z_tv, B_spline, theta, Z_ti, beta_ti,
                                     ti, n_strata, idx_B_sp, idx_fail,
                                     n_Z_strata, idx_Z_strata,
                                     istart, iend, parallel, threads);
   logplkd = objfun_list["logplkd"];
+  logplkd_vec.push_back(logplkd);
   while (iter < iter_max && crit > tol) {
     ++iter;
     update_list = stepinc_fixtra_bresties(Z_tv, B_spline, theta, Z_ti, beta_ti,
@@ -2164,6 +2180,7 @@ List surtiver_fixtra_bresties_fit(const vec &event, const vec &time,
       if (btr=="none") {
         theta += step_tv;
         beta_ti += step_ti;
+        theta_list.push_back(theta); beta_ti_list.push_back(beta_ti);
         crit = inc / 2;
         objfun_list = obj_fixtra_bresties(Z_tv, B_spline, theta, Z_ti, beta_ti,
                                           ti, n_strata, idx_B_sp, idx_fail,
@@ -2194,6 +2211,7 @@ List surtiver_fixtra_bresties_fit(const vec &event, const vec &time,
           diff_logplkd = logplkd_tmp - logplkd;
         }
         theta = theta_tmp; beta_ti = beta_ti_tmp;
+        theta_list.push_back(theta); beta_ti_list.push_back(beta_ti);
         if (iter==1) logplkd_init = logplkd;
         if (stop=="incre")
           crit = inc / 2;
@@ -2208,6 +2226,7 @@ List surtiver_fixtra_bresties_fit(const vec &event, const vec &time,
       inc = update_list["inc"];
       if (btr=="none") {
         theta += step;
+        theta_list.push_back(theta);
         crit = inc / 2;
         objfun_list = obj_fixtra_bresties(Z_tv, B_spline, theta, Z_ti, beta_ti,
                                           ti, n_strata, idx_B_sp, idx_fail,
@@ -2236,6 +2255,7 @@ List surtiver_fixtra_bresties_fit(const vec &event, const vec &time,
           diff_logplkd = logplkd_tmp - logplkd;
         }
         theta = theta_tmp;
+        theta_list.push_back(theta);
         if (iter==1) logplkd_init = logplkd;
         if (stop=="incre")
           crit = inc / 2;
@@ -2249,6 +2269,7 @@ List surtiver_fixtra_bresties_fit(const vec &event, const vec &time,
     cout << "Iter " << iter << ": Obj fun = " << setprecision(7) << fixed <<
       logplkd << "; Stopping crit = " << setprecision(7) << scientific <<
         crit << ";" << endl;
+    logplkd_vec.push_back(logplkd);
   }
   cout << "Algorithm converged after " << iter << " iterations!" << endl;
   CharacterVector names_strata = count_strata.names();
@@ -2258,14 +2279,20 @@ List surtiver_fixtra_bresties_fit(const vec &event, const vec &time,
     hazard_list.push_back(hazard[i], as<string>(names_strata[i]));
   }
   if (ti) {
-    return List::create(_["ctrl.pts"]=theta, _["tief"]=beta_ti,
+    return List::create(_["ctrl.pts"]=theta, _["ctrl.pts.hist"]=theta_list,
+                        _["tief"]=beta_ti,
+                        _["tief.hist"]=beta_ti_list,
                         _["info"]=update_list["info"],
-                                             _["logplkd"]=logplkd*event.n_elem,
-                                             _["btr.ct"]=btr_ct,
-                                             _["hazard"]=hazard_list);
+                        _["logplkd"]=logplkd*event.n_elem,
+                        _["logplkd.hist"]=logplkd_vec*event.n_elem,
+                        _["btr.ct"]=btr_ct,
+                        _["hazard"]=hazard_list);
   } else {
-    return List::create(_["ctrl.pts"]=theta, _["info"]=update_list["info"],
-                        _["logplkd"]=logplkd*event.n_elem, _["btr.ct"]=btr_ct,
+    return List::create(_["ctrl.pts"]=theta, _["ctrl.pts.hist"]=theta_list,
+                        _["info"]=update_list["info"],
+                        _["logplkd"]=logplkd*event.n_elem,
+                        _["logplkd.hist"]=logplkd_vec*event.n_elem,
+                        _["btr.ct"]=btr_ct,
                         _["hazard"]=hazard_list);
   }
 }

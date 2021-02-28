@@ -647,9 +647,12 @@ cox.zph <- function(formula, data, ...) {
   term.ti <- terms[setdiff(1:length(terms), c(idx.r, idx.o, idx.str, idx.tv))]
   term.time <- gsub(".*\\(([^,]*),\\s+([^,]*)\\)", "\\1", terms[idx.r])
   term.event <- gsub(".*\\(([^,]*),\\s+([^,]*)\\)", "\\2", terms[idx.r])
-  term.o <- ifelse(!is.null(idx.o), terms[idx.o], "")
-  term.str <- ifelse(!is.null(idx.str), terms[idx.str][1], "")
+  term.o <- if (!is.null(idx.o)) terms[idx.o] else NULL
+  term.str <- if(!is.null(idx.str)) terms[idx.str][1] else NULL
   term.tv <- gsub(".*\\((.*)\\)", "\\1", terms[idx.tv])
+  print(paste0("Surv(",term.time,",", term.event, ")~",
+               paste(c(term.tv, term.ti, term.o, term.str), 
+                     collapse="+")))
   `Surv` <- survival::`Surv`; `strata` <- survival::`strata`
   fmla <- as.formula(paste0("Surv(",term.time,",", term.event, ")~",
                             paste(c(term.tv, term.ti, term.o, term.str), 
