@@ -2028,6 +2028,7 @@ List surtiver_fixtra_fit(const vec &event, const IntegerVector &count_strata,
           diff_logplkd = logplkd_tmp - logplkd;
         }
         theta = theta_tmp;
+        theta_list.push_back(theta);
         if (iter==1) logplkd_init = logplkd;
         if (stop=="incre")
           crit = inc / 2;
