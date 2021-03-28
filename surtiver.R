@@ -194,8 +194,8 @@ tvef <- function(fit, times, parm) {
                          Boundary.knots=range(fit$times))
     int.bases <- splines2::ibs(times, degree=degree, intercept=T, knots=knots, 
                                Boundary.knots=range(fit$times))
-    ctrl.pts <- t(matrix(fit$ctrl.pts[term.tv%in%parm,],byrow=T,ncol=nsplines))
-    mat.tvef <- bases%*%ctrl.pts; mat.cumtvef <- int.bases%*%ctrl.pts
+    ctrl.pts <- matrix(fit$ctrl.pts[term.tv%in%parm,], ncol=nsplines)
+    mat.tvef <- bases%*%t(ctrl.pts); mat.cumtvef <- int.bases%*%t(ctrl.pts)
     colnames(mat.tvef) <- parm; colnames(mat.cumtvef) <- parm
     rownames(mat.tvef) <- times; rownames(mat.cumtvef) <- times
     ls <- list(tvef=mat.tvef, cumtvef=mat.cumtvef)
