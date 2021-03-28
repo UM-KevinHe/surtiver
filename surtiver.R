@@ -125,6 +125,9 @@ surtiver <- function(formula, data, spline="B-spline", nsplines=8, ties="Breslow
     
   }
   fit$times <- times
+  fit$tvef <- splines::bs(times, degree=degree, intercept=T, knots=knots,
+                          Boundary.knots=range(fit$times))%*%t(fit$ctrl.pts)
+  rownames(fit$tvef) <- times
   class(fit) <- "surtiver"
   attr(fit, "spline") <- spline
   if (length(term.ti)>0) {
