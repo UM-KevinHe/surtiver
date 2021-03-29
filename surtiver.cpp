@@ -2001,6 +2001,7 @@ List surtiver_fixtra_fit(const vec &event, const IntegerVector &count_strata,
       inc = update_list["inc"];
       if (btr=="none") {
         theta += step;
+        theta_list.push_back(theta);
         crit = inc / 2;
         objfun_list = objfun_fixtra(Z_tv, B_spline, theta, Z_ti, beta_ti, ti,
                                     n_strata, idx_B_sp, idx_fail, n_Z_strata,

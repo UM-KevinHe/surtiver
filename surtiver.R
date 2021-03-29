@@ -134,7 +134,7 @@ surtiver <- function(formula, data, spline="B-spline", nsplines=8, ties="Breslow
     fit$tief <- c(fit$tief)
     names(fit$tief) <- term.ti
   }
-  colnames(fit$info) <- rownames(fit$info) <- 
+  colnames(fit$info) <- rownames(fit$info) <-
     c(rep(term.tv, each=nsplines), term.ti)
   attr(fit, "nsplines") <- nsplines
   attr(fit, "degree.spline") <- degree
